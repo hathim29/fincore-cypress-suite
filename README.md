@@ -22,7 +22,7 @@ The same app is also automated in Playwright + TypeScript in [fincore-bank-qa-la
 | `api/customers-api.cy.js` | REST API | Response shape, 201 / 400 / 404 paths, duplicate email, server-side EMI calculation |
 | `network/network-stubbing.cy.js` | UI states | `cy.intercept`: empty state (fixture), API down (`forceNetworkError`), slow response (`setDelay`), request spying |
 
-**50 tests across 7 specs.**
+**50 Cypress tests across 7 specs**, plus a **Postman collection of 46 requests and 226 assertions** run by **Newman** (below).
 
 ## Cypress features demonstrated
 
@@ -39,6 +39,26 @@ The same app is also automated in Playwright + TypeScript in [fincore-bank-qa-la
 | Data-driven tests | Login, dashboard, PAN checks | One test definition, many inputs |
 | Retries + test isolation | `cypress.config.js` | Retries once on CI, never while developing, and each test starts with a fresh browser state |
 
+## API tests with Postman + Newman
+
+The same API is also covered by a Postman collection (`postman/`). Newman, Postman's command-line runner, runs it without opening Postman, locally and on every CI build.
+
+| | |
+|---|---|
+| Collection | `postman/fincore-api.postman_collection.json`: 7 folders (Dashboard, Customers, Accounts, Loans, Loan Repayment, Credit Cards, Transactions) |
+| Size | 46 requests, 226 assertions |
+| Style | Requests chain together: IDs created by one request are saved as collection variables and used by the next (create loan → pay first EMI → pay second EMI → check loan score) |
+| Checks on every request | Collection-level tests for response time and JSON content type |
+| Report | `newman/report.html` (htmlextra), plus JUnit XML on CI |
+
+```bash
+npm run api:test        # app must be running on http://localhost:3000
+```
+Open `newman/report.html` in a browser for the full report. To point it at another environment, change `baseUrl`:
+```bash
+npx newman run postman/fincore-api.postman_collection.json --env-var baseUrl=https://fincore-qalab.com
+```
+
 ## Project structure
 
 ```
@@ -50,7 +70,8 @@ cypress/
 cypress.config.js
 .github/workflows/cypress.yml   CI: fresh Postgres → schema → seed → app → Cypress
 db/  routes/  public/  server.js   the FinCore app under test (Node.js / Express / PostgreSQL)
-postman/          Postman collection for the same API
+postman/          Postman collection + environment, run by Newman
+newman/           Newman HTML report (generated, not committed)
 ```
 
 ## Run it locally
@@ -72,6 +93,7 @@ npm run cy:open                 # Cypress app: pick a spec and watch it run
 npm run cy:run                  # headless run of the whole suite
 npx cypress run --spec "cypress/e2e/loans/**"           # one feature
 npx cypress run --spec "cypress/e2e/auth/login.cy.js"   # one spec
+npm run api:test                # Postman collection through Newman
 ```
 
 Run a single test while developing: change `it(` to `it.only(` in the spec, then run that spec.
@@ -90,7 +112,9 @@ Every push and pull request runs the suite on GitHub Actions. The workflow:
 1. starts a **throwaway PostgreSQL** container, so tests never touch shared data
 2. creates the schema and seeds fresh demo data
 3. starts the app and runs Cypress in Chrome
-4. uploads screenshots of any failure as a build artifact
+4. re-seeds the data and runs the Postman collection through Newman
+5. turns any failure into an annotation on the run page and writes a results table for each suite
+6. uploads the Newman HTML report, and screenshots of any Cypress failure, as build artifacts
 
 ## The app under test
 

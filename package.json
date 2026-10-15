@@ -12,6 +12,8 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:chrome": "cypress run --browser chrome",
+    "api:test": "newman run postman/fincore-api.postman_collection.json -e postman/fincore-local.postman_environment.json --env-var baseUrl=http://localhost:3000 -r cli,htmlextra --reporter-htmlextra-export newman/report.html --reporter-htmlextra-title \"FinCore API - Newman report\"",
+    "api:test:ci": "newman run postman/fincore-api.postman_collection.json -e postman/fincore-local.postman_environment.json --env-var baseUrl=http://localhost:3000 -r cli,htmlextra,junit --reporter-htmlextra-export newman/report.html --reporter-junit-export newman/results/newman-results.xml",
     "test": "cypress run"
   },
   "keywords": [
@@ -35,6 +37,8 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "cypress": "13.17.0"
+    "cypress": "13.17.0",
+    "newman": "^6.2.3",
+    "newman-reporter-htmlextra": "^1.23.1"
   }
 }

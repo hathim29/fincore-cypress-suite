@@ -9,7 +9,7 @@ on:
 
 jobs:
   cypress:
-    name: Cypress E2E + API tests
+    name: Cypress E2E + Postman API (Newman)
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -59,9 +59,35 @@ jobs:
           wait-on-timeout: 60
           browser: chrome
 
-      - name: Test summary
-        if: always()
-        run: node .github/scripts/junit-summary.js cypress/results
+      - name: Cypress summary
+        if: ${{ !cancelled() }}
+        run: node .github/scripts/junit-summary.js cypress/results "Cypress"
+
+      # ── Postman collection via Newman ──────────────────────────────
+      # Runs even if Cypress failed, on freshly re-seeded data, so the two suites stay independent
+      - name: Re-seed data for API tests
+        if: ${{ !cancelled() }}
+        run: node db/seed.js
+
+      - name: Run Postman collection (Newman)
+        if: ${{ !cancelled() }}
+        run: |
+          npm start > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/api/dashboard/stats > /dev/null && break; sleep 2; done
+          npm run api:test:ci
+
+      - name: Newman summary
+        if: ${{ !cancelled() }}
+        run: node .github/scripts/junit-summary.js newman/results "Newman (Postman API)"
+
+      - name: Upload Newman HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: newman/report.html
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Upload screenshots of failures
         if: failure()
@@ -69,4 +95,5 @@ jobs:
         with:
           name: cypress-screenshots
           path: cypress/screenshots
+          if-no-files-found: ignore
           retention-days: 14
