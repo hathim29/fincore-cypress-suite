@@ -18,6 +18,13 @@ module.exports = defineConfig({
         // Retry a failed test once in `cypress run` (CI), never while developing
         retries: { runMode: 1, openMode: 0 },
 
+        // On CI, write JUnit XML (turned into annotations + a summary table by the workflow);
+        // locally, keep Cypress's readable 'spec' output
+        reporter: process.env.CI ? 'junit' : 'spec',
+        reporterOptions: process.env.CI
+            ? { mochaFile: 'cypress/results/results-[hash].xml', toConsole: false }
+            : {},
+
         // Evidence for failures
         screenshotOnRunFailure: true,
         video: false,
