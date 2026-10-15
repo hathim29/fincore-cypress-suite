@@ -58,6 +58,12 @@ jobs:
           wait-on: http://localhost:3000
           wait-on-timeout: 60
           browser: chrome
+          # JUnit results feed the summary step below (failures become annotations)
+          command: npx cypress run --browser chrome --reporter junit --reporter-options "mochaFile=cypress/results/results-[hash].xml,toConsole=false"
+
+      - name: Test summary
+        if: always()
+        run: node .github/scripts/junit-summary.js cypress/results
 
       - name: Upload screenshots of failures
         if: failure()
