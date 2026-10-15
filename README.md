@@ -18,11 +18,11 @@ The same app is also automated in Playwright + TypeScript in [fincore-bank-qa-la
 | `customers/customers.cy.js` | Customers | Search (debounced, waits on the API call), empty result, KYC filter, details popup, admin-only actions |
 | `onboarding/onboarding.cy.js` | 4-step KYC wizard | Field validation, PAN and Aadhaar rules (fixture-driven), Back keeps data, **full onboarding end to end** with the result checked through the API |
 | `loans/loans.cy.js` | Loans & EMI | Status filter, EMI preview maths (₹8,814.86), create loan, **pay an EMI** checked through both the UI and the API, 120-month schedule, viewer is read-only |
-| `dashboard/dashboard.cy.js` | Dashboard | Stat cards match the API response, every card drills into a filtered list (data-driven) |
+| `dashboard/dashboard.cy.js` | Dashboard | Stat cards match the API response and each entity's own list total (regression for BUG-FC-103), every card drills into a filtered list (data-driven) |
 | `api/customers-api.cy.js` | REST API | Response shape, 201 / 400 / 404 paths, duplicate email, server-side EMI calculation |
 | `network/network-stubbing.cy.js` | UI states | `cy.intercept`: empty state (fixture), API down (`forceNetworkError`), slow response (`setDelay`), request spying |
 
-**50 Cypress tests across 7 specs**, plus a **Postman collection of 46 requests and 226 assertions** run by **Newman** (below).
+**54 Cypress tests across 7 specs**, plus a **Postman collection of 46 requests and 226 assertions** run by **Newman** (below).
 
 ## Cypress features demonstrated
 

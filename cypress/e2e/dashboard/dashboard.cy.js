@@ -32,4 +32,23 @@ describe('Dashboard', () => {
             if (query) cy.location('search').should('include', query);
         });
     });
+
+    // Regression for BUG-FC-103: four cards showed 0 because the stats API never
+    // sent their fields. Each card must match an independent source: the filtered
+    // total from that entity's own list API.
+    const accuracy = [
+        { card: 'stat-frozen',        source: '/api/accounts?status=frozen&limit=1' },
+        { card: 'stat-closed-loans',  source: '/api/loans?status=closed&limit=1' },
+        { card: 'stat-cards',         source: '/api/credit-cards?limit=1' },
+        { card: 'stat-blocked-cards', source: '/api/credit-cards?status=blocked&limit=1' },
+    ];
+    accuracy.forEach(({ card, source }) => {
+        it(`${card} matches the ${source.split('?')[0]} total`, () => {
+            cy.wait('@stats');
+            cy.api('GET', source).its('body.total').then(total => {
+                cy.getByTestId(card).find('.stat-value')
+                    .should('have.text', Number(total).toLocaleString('en-IN'));
+            });
+        });
+    });
 });
