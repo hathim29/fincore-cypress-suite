@@ -1989,6 +1989,21 @@
           "name": "Create New Transaction",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Deposits only work on ACTIVE accounts. The seed freezes ~10% of accounts at random,",
+                  "// so pick an active one here instead of reusing whichever account had the latest transaction.",
+                  "pm.sendRequest(pm.variables.replaceIn('{{baseUrl}}/api/accounts?status=active&limit=1'), (err, res) => {",
+                  "    if (err) { console.error(err); return; }",
+                  "    const account = res.json().data[0];",
+                  "    pm.collectionVariables.set('txnAccountId', account.id);",
+                  "});"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
