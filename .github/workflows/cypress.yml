@@ -1,0 +1,68 @@
+name: Cypress Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  cypress:
+    name: Cypress E2E + API tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # A throwaway Postgres for every run — tests never touch shared data
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fincore
+          POSTGRES_PASSWORD: fincore
+          POSTGRES_DB: fincore
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd "pg_isready -U fincore"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://fincore:fincore@localhost:5432/fincore
+      DB_SSL: "false"
+      PORT: 3000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies (incl. Cypress binary)
+        run: npm ci
+
+      - name: Create schema
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/schema.sql
+
+      - name: Seed test data
+        run: node db/seed.js
+
+      - name: Run Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          start: npm start
+          wait-on: http://localhost:3000
+          wait-on-timeout: 60
+          browser: chrome
+
+      - name: Upload screenshots of failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          retention-days: 14

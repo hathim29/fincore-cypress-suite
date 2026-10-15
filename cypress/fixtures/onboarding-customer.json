@@ -1,0 +1,14 @@
+{
+  "firstName": "Karan",
+  "lastName": "Malhotra",
+  "phone": "9840012345",
+  "dob": "1991-06-15",
+  "city": "Chennai",
+  "address": "12 Anna Salai, Teynampet",
+  "gender": "male",
+  "marital": "married",
+  "nationality": "Indian",
+  "pan": "ABCDE1234F",
+  "aadhaar": "234567890123",
+  "initialDeposit": "25000"
+}
