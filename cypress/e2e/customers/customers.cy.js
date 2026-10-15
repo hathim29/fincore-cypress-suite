@@ -2,7 +2,9 @@ import customersPage from '../../pages/CustomersPage';
 
 describe('Customers', () => {
 
-    beforeEach(() => customersPage.visit('admin'));
+    beforeEach(() => {
+        customersPage.visit('admin');
+    });
 
     it('lists customers with a total count', () => {
         customersPage.rows.should('have.length.greaterThan', 0);

@@ -87,13 +87,18 @@ describe('Customer onboarding (4-step KYC wizard)', () => {
         cy.intercept('POST', '**/api/accounts').as('createAccount');
         cy.get('#declaration').check();
 
-        // The app plays a ~20 s "processing" animation before calling the API.
-        // cy.clock() takes control of the page's timers and cy.tick() fast-forwards them,
-        // one second per command so each animation step's await can resume in between.
+        // The app plays a ~20 s "processing" animation (6 steps) before calling the API.
+        // cy.clock() takes control of the page's timers; cy.tick() fast-forwards them.
+        // We tick one step at a time and wait for that step to finish, so the app's
+        // `await` can schedule the next timer before we tick again.
+        const stepDurations = [2000, 3000, 4000, 5000, 3000, 3000];
         cy.clock();
         onboarding.next();
         cy.get('#processingOverlay').should('have.class', 'show');
-        Cypress._.times(21, () => cy.tick(1000));
+        stepDurations.forEach((ms, i) => {
+            cy.tick(ms);
+            cy.get(`#pStep${i + 1}`).should('have.class', 'done');
+        });
 
         cy.wait('@createCustomer').its('response.statusCode').should('eq', 201);
         cy.wait('@createAccount').then(({ response }) => {

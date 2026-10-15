@@ -2,7 +2,9 @@ import loginPage from '../../pages/LoginPage';
 
 describe('Login', () => {
 
-    beforeEach(() => loginPage.visit());
+    beforeEach(() => {
+        loginPage.visit();
+    });
 
     // ── Happy path ─────────────────────────────────────────────
     it('shows the login form with no error on load', () => {

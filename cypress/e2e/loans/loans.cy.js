@@ -3,7 +3,9 @@ import loansPage from '../../pages/LoansPage';
 describe('Loans & EMI', () => {
 
     describe('as admin', () => {
-        beforeEach(() => loansPage.visit('admin'));
+        beforeEach(() => {
+            loansPage.visit('admin');
+        });
 
         it('lists loans with a total count', () => {
             loansPage.rows.should('have.length.greaterThan', 0);
@@ -75,7 +77,9 @@ describe('Loans & EMI', () => {
     });
 
     describe('as viewer', () => {
-        beforeEach(() => loansPage.visit('viewer'));
+        beforeEach(() => {
+            loansPage.visit('viewer');
+        });
 
         it('can read loans but not create or pay', () => {
             loansPage.rows.should('have.length.greaterThan', 0);
