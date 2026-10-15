@@ -16,7 +16,9 @@ class CustomersPage {
     search(text) {
         cy.intercept('GET', '**/api/customers?*').as('searchCustomers');
         cy.getByTestId('search-input').clear().type(text);
-        cy.wait('@searchCustomers').its('request.url').should('include', `search=${encodeURIComponent(text)}`);
+        // Compare the decoded query value: browsers may encode a space as '+' or '%20'
+        cy.wait('@searchCustomers').its('request.url')
+            .should(url => expect(new URL(url).searchParams.get('search')).to.eq(text));
         return this;
     }
 
